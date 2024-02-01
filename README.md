@@ -66,7 +66,7 @@ async def test(ctx):
      await ctx.send('Я тут', file = discord.File('images.jpeg'))
 ```
 
- Команда !статус проверяет сколько негативных и позитивных слов написал пользователь боту и ведет их подсчет, возвращая пользователю итог. 
+Команда !статус проверяет сколько негативных и позитивных слов написал пользователь боту и ведет их подсчет, возвращая пользователю итог. 
 
 ```
 @bot.command()
@@ -82,3 +82,18 @@ async def статус(ctx):
         await ctx.send('вы использовали позитивные слова в количестве')
         await ctx.send(pos)
 ```      
+
+Команда !баланс позволяет посмотреть баланс свой или другого члена (колонка count в таблице users) и возвращает значение из таблицы. Если автор команды запросил свой баланс, не указав другого члена, то получаем его по ctx.author.id, а если после названия команды указан другой член, то возвращаем значение баланса по member.id.
+
+```     
+@bot.command()
+async def баланс(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send(embed = discord.Embed(
+            description = f"""Баланс пользователя **{ctx.author}** составляет **{cursor.execute("SELECT count FROM users WHERE id = {}".format(ctx.author.id)).fetchone()[0]}:leaves:**"""
+        ))
+    else:
+         await ctx.send(embed = discord.Embed(
+            description = f"""Баланс пользователя **{member}** составляет **{cursor.execute("SELECT count FROM users WHERE id = {}".format(member.id)).fetchone()[0]} :leaves:**"""
+        ))
+```     
