@@ -96,4 +96,51 @@ async def баланс(ctx, member: discord.Member = None):
          await ctx.send(embed = discord.Embed(
             description = f"""Баланс пользователя **{member}** составляет **{cursor.execute("SELECT count FROM users WHERE id = {}".format(member.id)).fetchone()[0]} :leaves:**"""
         ))
-```     
+```
+
+Команда !награда работает похожим образом, но требует помимо ввода ника другого члена, ввода суммы,которую необходимо начислить на баланс пользователю. Если автор не введет, то увидит сообщение с просьбой ввести сумму. Данное значение будет обнволено в колонке count таблицы users.
+
+```   
+@bot.command()
+async def награда(ctx, member: discord.Member = None, amount: int = None):
+    if member is None:
+        await ctx.send(f"**{ctx.author}**,укажите пользователя, которому вы хотите выдать денег на счет")
+    else:
+        if amount is None:
+            await ctx.send(f"**{ctx.author}**,укажите сумму, которую вы хотите выдать на счет")
+        elif amount < 1:
+            await ctx.send(f"**{ctx.author}**,укажите сумму больше 1")
+        else:
+            cursor.execute("UPDATE users SET count = count + {} WHERE id = {}".format(amount,member.id))
+            connection.commit()
+            await ctx.message.add_reaction('✔️')
+```
+Команда !списывание работает так же, требуя ввода ника другого члена и ввода суммы, но для списания с баланса пользователя. Данное значение также обновляется в колонке count таблицы users.
+
+```   
+@bot.command()
+async def списывание(ctx, member: discord.Member = None, amount = None):
+    if member is None:
+        await ctx.send(f"**{ctx.author}**,укажите пользователя, которому вы хотите выдать денег на счет")
+    else:
+        if amount is None:
+            await ctx.send(f"**{ctx.author}**,укажите сумму, которую вы хотите выдать на счет")
+        elif amount == 'all':
+            cursor.execute("UPDATE users SET count = count + {} WHERE id = {}".format(0,member.id))
+            connection.commit()
+            await ctx.message.add_reaction('✔️')
+        elif int(amount) < 1:
+            await ctx.send(f"**{ctx.author}**,укажите сумму больше 1")
+        else:
+            cursor.execute("UPDATE users SET count = count - {} WHERE id = {}".format(int(amount),member.id))
+            connection.commit()
+            await ctx.message.add_reaction('✔️')
+```
+Также для дальнейшей обработки тональности, с которйо общается пользователь бота, потребовалось использование сторонных API.
+```   
+def request_sentiment(message):
+    data = {'x': [message]}
+    res = requests.post('https://7015.deeppavlov.ai/model', json=data).json()
+    santiment = res[0][0]
+    return santiment
+```
