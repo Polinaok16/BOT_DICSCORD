@@ -163,13 +163,7 @@ async def on_message(message):
         await message.delete()
     elif setiment == 'positive':
         pos += 1
-        await message.channel.send(f'{message.author.mention}, приятно слышать!')
-    
-    for i in message.content.split(' '):
-        if i.lower().translate(str.maketrans('','',string.punctuation)) in ['балбес', 'дерьмо']:
-            await message.channel.send(f'{message.author.mention}, это ужасное ругательство!')
-            await message.channel.send(f'{message.author.mention}, БАН!')
-            await message.author.ban(reason = 'Нецензурная лексика')
+        await message.channel.send(f'{message.author.mention}, приятно слышать!')```
 
     if 'как дела' in message.content.lower():
         await message.channel.send('Нормально')
@@ -183,4 +177,9 @@ async def on_message(message):
                      "Если план А не сработал, не сдавайся — у тебя есть ещё 32 буквы, чтобы попробовать.",
                      "Это я-то нерешительный? Сомневаюсь…"] 
         await message.channel.send(random.choice(jokes))
+        
+    if {i.lower().translate(str.maketrans('','',string.punctuation)) for i in message.content.split(' ')}.intersection() != set(json.load(open('cenz.json'))):
+       await message.channel.send(f'{message.author.mention}, это ужасное ругательство!')
+       await message.delete()
+    
 ```
