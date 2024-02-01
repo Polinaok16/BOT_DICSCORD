@@ -136,11 +136,51 @@ async def списывание(ctx, member: discord.Member = None, amount = None
             connection.commit()
             await ctx.message.add_reaction('✔️')
 ```
-Также для дальнейшей обработки тональности, с которйо общается пользователь бота, потребовалось использование сторонных API.
+Также для дальнейшей обработки настроения речи, с которой общается пользователь бота, потребовалось использование сторонных API.
 ```   
 def request_sentiment(message):
     data = {'x': [message]}
     res = requests.post('https://7015.deeppavlov.ai/model', json=data).json()
     santiment = res[0][0]
     return santiment
+```
+Дла подсчета того, сколько раз пользователь получил ответ negative и positive были созданы переменные neg = 0 и 
+pos = 0. Также было прописано событие on_message, которое во-первых, выводит тип натсроения, с которым общается пользователь (negative,positive,neutral), далее ведет подсчет количества. При введение негативного слова, удаляет его и выводит предупреждение. При использовании ряда ругательств банит пользователя по прифине нецензурной лексики. Также реагирует на вопрос "как дела", пока, привет, и выводит рандомную шутку при запросе при вводе пользователем "расскажи шутку".
+
+```
+@bot.event
+async def on_message(message):
+    global neg, pos
+ 
+    if message.author == bot.user:
+        return
+
+    setiment = request_sentiment(message.content)
+    await message.channel.send(setiment)
+    if setiment == 'negative':
+        neg += 1
+        await message.channel.send(f'{message.author.mention}, ужас, так нельзя!')
+        await message.delete()
+    elif setiment == 'positive':
+        pos += 1
+        await message.channel.send(f'{message.author.mention}, приятно слышать!')
+    
+    for i in message.content.split(' '):
+        if i.lower().translate(str.maketrans('','',string.punctuation)) in ['балбес', 'дерьмо']:
+            await message.channel.send(f'{message.author.mention}, это ужасное ругательство!')
+            await message.channel.send(f'{message.author.mention}, БАН!')
+            await message.author.ban(reason = 'Нецензурная лексика')
+
+    if 'как дела' in message.content.lower():
+        await message.channel.send('Нормально')
+    elif message.content.lower() == "Привет" or message.content.lower() == "Здраствуйте": 
+        await message.channel.send(f'Привет {message.author.mention}') 
+        return
+    elif message.content.lower() == "Пока": 
+        await message.channel.send(f'Пока {message.author.mention}') 
+    elif message.content.lower() == "расскажи шутку": 
+        jokes = ["Старые мосты могут еще пригодиться. Лучше сжечь старые грабли",
+                     "Если план А не сработал, не сдавайся — у тебя есть ещё 32 буквы, чтобы попробовать.",
+                     "Это я-то нерешительный? Сомневаюсь…"] 
+        await message.channel.send(random.choice(jokes))
 ```
