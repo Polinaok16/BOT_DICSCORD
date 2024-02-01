@@ -42,3 +42,43 @@ async def on_member_remove(member):
             await bot.get_channel(ch.id).send(f'{member}, жаль, будет тебя не хватать!')
     
 ```
+
+Далее создаются команды для бота. Бот имеет семь команд. Команда !информация информируется пользователя о том, какие команды имеет бот. 
+
+```
+@bot.command()
+async def информация(ctx, arg = None):
+    author = ctx.message.author
+    if arg == None:
+        await ctx.send(f'{author.mention} Введите:\n!информация общая\n!info команды')
+    elif arg == 'общая':
+        await ctx.send(f'{author.mention} Я Bot2 и я отвечаю за порядок и веселье в чате')
+    elif arg == 'команды':
+        await ctx.send(f'{author.mention} !test - Бот онлайн?\n !статус - позитив/негатив\n !рандом - рандомное число\n !баланс - баланс пользователя\n !награда - начисление средств\n !списывание - списывание средств')
+    else:
+        await ctx.send(f'{author.mention} Такой команды нет!')
+```
+ Команад !test проверяет в сети ли бот и выводит картинку котика. 
+
+```
+@bot.command()
+async def test(ctx):
+     await ctx.send('Я тут', file = discord.File('images.jpeg'))
+```
+
+ Команда !статус проверяет сколько негативных и позитивных слов написал пользователь боту и ведет их подсчет, возвращая пользователю итог. 
+
+```
+@bot.command()
+async def статус(ctx):
+    if neg == 0:
+        await ctx.send('вы не использовали негативные слова')
+    else:
+        await ctx.send('вы использовали негативные слова в количестве')
+        await ctx.send(neg)
+    if pos == 0:
+        await ctx.send('вы не использовали  позитивные слова')
+    else:
+        await ctx.send('вы использовали позитивные слова в количестве')
+        await ctx.send(pos)
+```      
