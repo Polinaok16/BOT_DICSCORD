@@ -145,7 +145,7 @@ def request_sentiment(message):
     return santiment
 ```
 Дла подсчета того, сколько раз пользователь получил ответ negative и positive были созданы переменные neg = 0 и 
-pos = 0. Также было прописано событие on_message, которое выводит тип натсроения, с которым общается пользователь (negative,positive,neutral), далее ведет подсчет количества использования слов той или иной модальности кроме нейтральной. При введение негативного слова, удаляет его и выводит предупреждение. При использовании ряда ругательств из файла cenz.text, в который можно добавить еще ругательств и который преобразуется в json, удаляет ругательство и выводит предупреждение. Также, если пользователь введет ругательсов, зашифровав его другими знаками, то бот все равно определит плохое слово благодаря данному меотду и встроенной в модуле системы со всеми занками пункуации translate(str.maketrans('','',string.punctuation). Также реагирует на вопрос "как дела", пока, привет, и выводит рандомную шутку при вводе пользователем "расскажи шутку".
+pos = 0. Также было прописано событие on_message, которое выводит тип натсроения, с которым общается пользователь (negative,positive,neutral), далее ведет подсчет количества использования слов той или иной модальности кроме нейтральной. При введение негативного слова, удаляет его и выводит предупреждение. При использовании ряда ругательств из списка, в который можно добавить еще ругательств, выводит предупреждение и отправляет в бан. Также, если пользователь введет ругательсов, зашифровав его другими знаками, то бот все равно определит плохое слово благодаря данному меотду и встроенной в модуле системы со всеми занками пункуации translate(str.maketrans('','',string.punctuation). Также реагирует на вопрос "как дела", пока, привет, и выводит рандомную шутку при вводе пользователем "расскажи шутку".
 
 ```
 @bot.event
@@ -163,7 +163,13 @@ async def on_message(message):
         await message.delete()
     elif setiment == 'positive':
         pos += 1
-        await message.channel.send(f'{message.author.mention}, приятно слышать!')```
+        await message.channel.send(f'{message.author.mention}, приятно слышать!')
+    
+    for i in message.content.split(' '):
+        if i.lower().translate(str.maketrans('','',string.punctuation)) in ['балбес', 'дерьмо', 'дурак']:
+            await message.channel.send(f'{message.author.mention}, это ужасное ругательство!')
+            await message.channel.send(f'{message.author.mention}, БАН!')
+            await message.author.ban(reason = 'Нецензурная лексика')
 
     if 'как дела' in message.content.lower():
         await message.channel.send('Нормально')
@@ -177,9 +183,4 @@ async def on_message(message):
                      "Если план А не сработал, не сдавайся — у тебя есть ещё 32 буквы, чтобы попробовать.",
                      "Это я-то нерешительный? Сомневаюсь…"] 
         await message.channel.send(random.choice(jokes))
-        
-    if {i.lower().translate(str.maketrans('','',string.punctuation)) for i in message.content.split(' ')}.intersection() != set(json.load(open('cenz.json'))):
-       await message.channel.send(f'{message.author.mention}, это ужасное ругательство!')
-       await message.delete()
-    
 ```
